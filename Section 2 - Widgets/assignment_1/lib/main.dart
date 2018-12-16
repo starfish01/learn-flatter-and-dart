@@ -1,27 +1,27 @@
 import 'package:flutter/material.dart';
 
-import './product_manager.dart';
+import './text_control.dart';
 
-// void main() {
-//   runApp(MyApp());
-// }
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'Flutter Demo',
       theme: ThemeData(
-        brightness: Brightness.light,
-        primarySwatch: Colors.deepOrange,
-        accentColor: Colors.deepPurple
+        accentColor: Colors.amberAccent,
+        primarySwatch: Colors.red,
       ),
       home: Scaffold(
         appBar: AppBar(
-          title: Text('Easy List'),
+          title: Text('Assignment One'),
         ),
-        body: ProductManager(startingProduct: 'Food Tester'),
+        body: TextControl(),
       ),
+      
     );
   }
 }
+
+

@@ -85,7 +85,6 @@ class _AuthPage extends State<AuthPage> {
                   _showExitDialog(context);
                 },
               ),
-            ]))
-            );
+            ])));
   }
 }

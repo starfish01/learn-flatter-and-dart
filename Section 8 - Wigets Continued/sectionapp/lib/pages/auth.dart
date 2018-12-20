@@ -39,11 +39,21 @@ class _AuthPage extends State<AuthPage> {
           title: Text('Login'),
         ),
         body: Container(
-            margin: EdgeInsets.all(10.0),
-            child: ListView(children: <Widget>[
+            decoration: BoxDecoration(
+                image: DecorationImage(
+                    fit: BoxFit.cover,
+                    colorFilter: ColorFilter.mode(
+                        Colors.black.withOpacity(0.3), BlendMode.dstATop),
+                    image: AssetImage('assets/background.jpg'))),
+            padding: EdgeInsets.all(10.0),
+            child: Center(
+                child: SingleChildScrollView(
+                    child: Column(children: <Widget>[
               TextField(
                 decoration: InputDecoration(
                     labelText: 'Email',
+                    filled: true,
+                    fillColor: Colors.white,
                     icon: const Padding(
                         padding: const EdgeInsets.only(top: 15.0),
                         child: const Icon(Icons.email))),
@@ -54,9 +64,12 @@ class _AuthPage extends State<AuthPage> {
                   });
                 },
               ),
+              SizedBox(height: 10,),
               TextField(
                 decoration: InputDecoration(
                     labelText: 'Password',
+                    filled: true,
+                    fillColor: Colors.white,
                     icon: Padding(
                         padding: EdgeInsets.only(top: 15.0),
                         child: Icon(Icons.lock,
@@ -85,6 +98,6 @@ class _AuthPage extends State<AuthPage> {
                   _showExitDialog(context);
                 },
               ),
-            ])));
+            ])))));
   }
 }

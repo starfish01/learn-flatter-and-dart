@@ -26,9 +26,31 @@ class Products extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Oswald'),
                 ),
-                SizedBox(width: 8.0,),
-                Text(products[index]['price'].toString(), style: TextStyle(fontSize: 20))
+                SizedBox(
+                  width: 8.0,
+                ),
+                Container(
+                    child: Text('\$' + products[index]['price'].toString(),
+                        style: TextStyle(color: Colors.white)),
+                    decoration: BoxDecoration(
+                        color: Theme.of(context).accentColor,
+                        borderRadius: BorderRadius.circular(5.0)),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 6.0, vertical: 4.0)),
               ],
+            ),
+          ),
+          DecoratedBox(
+            child: Padding(
+              child: Text('Sydney'),
+              padding: EdgeInsets.symmetric(horizontal: 6.0, vertical: 4.0),
+            ),
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: Colors.grey,
+                width: 1.0,
+              ),
+              borderRadius: BorderRadius.circular(4.0),
             ),
           ),
           ButtonBar(

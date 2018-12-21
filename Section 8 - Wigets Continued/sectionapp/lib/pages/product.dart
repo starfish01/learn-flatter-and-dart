@@ -10,7 +10,7 @@ class ProductPage extends StatelessWidget {
   final double price;
   final String description;
 
-  ProductPage(this.title, this.imageUrl,this.price,this.description);
+  ProductPage(this.title, this.imageUrl, this.price, this.description);
 
   _showWarningDialog(BuildContext context) {
     showDialog(
@@ -55,9 +55,15 @@ class ProductPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               Image.asset(imageUrl),
-              Container(padding: EdgeInsets.all(10.0), child: TitleDefault(title),),
-              Container(padding: EdgeInsets.all(10.0), child: Text('\$'+price.toString())),
-              Container(padding: EdgeInsets.all(10.0), child: Text(description)),
+              Container(
+                padding: EdgeInsets.all(10.0),
+                child: TitleDefault(title),
+              ),
+              Container(
+                  padding: EdgeInsets.all(10.0),
+                  child: Text('\$' + price.toString())),
+              Container(
+                  padding: EdgeInsets.all(10.0), child: Text(description)),
               Container(
                   padding: EdgeInsets.all(10.0),
                   child: IconButton(

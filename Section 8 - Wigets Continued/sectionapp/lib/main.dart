@@ -42,10 +42,16 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
         // debugShowMaterialGrid: true,
         theme: ThemeData(
-            fontFamily: 'Oswald',
+            //fontFamily: 'Oswald',
             brightness: Brightness.light,
             primarySwatch: Colors.deepOrange,
+            
+            //allows to manage the button color global1ly,
+            //however we cant set the text colour here
+            buttonColor: Colors.blueAccent,
+            
             accentColor: Colors.deepPurple),
+
         //home: AuthPage(),
         routes: {
           '/': (BuildContext context) => AuthPage(),

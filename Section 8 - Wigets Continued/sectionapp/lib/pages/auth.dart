@@ -100,7 +100,6 @@ class _AuthPage extends State<AuthPage> {
   @override
   Widget build(BuildContext context) {
     final double deviceWidth =  MediaQuery.of(context).size.width;
-
     final double targetWitdth = deviceWidth > 555.0 ? 500 : deviceWidth * 0.95;
 
     return Scaffold(

@@ -5,14 +5,13 @@ import '../ui_elements/title_default.dart';
 import './address.dart';
 
 import './price.dart';
-class ProductCard extends StatelessWidget {
 
+class ProductCard extends StatelessWidget {
   final Map<String, dynamic> product;
   final int index;
   final Function deleteProduct;
 
-  ProductCard(this.product, this.index,this.deleteProduct);
-
+  ProductCard(this.product, this.index, this.deleteProduct);
 
   @override
   Widget build(BuildContext context) {
@@ -37,10 +36,8 @@ class ProductCard extends StatelessWidget {
               ],
             ),
           ),
-          
 
           Address('sydney'),
-
 
           ButtonBar(
             alignment: MainAxisAlignment.center,
@@ -49,7 +46,6 @@ class ProductCard extends StatelessWidget {
                 icon: Icon(Icons.info),
                 iconSize: 40.0,
                 color: Theme.of(context).accentColor,
-
                 onPressed: () => Navigator.pushNamed<bool>(
                             context, '/product/' + index.toString())
                         .then((bool value) {
@@ -57,15 +53,12 @@ class ProductCard extends StatelessWidget {
                         deleteProduct(index);
                       }
                     }),
-
               ),
               IconButton(
                 icon: Icon(Icons.favorite_border),
                 iconSize: 40.0,
                 color: Colors.red,
-                onPressed: (){
-
-                },
+                onPressed: () {},
               )
             ],
           )
@@ -73,5 +66,4 @@ class ProductCard extends StatelessWidget {
       ),
     );
   }
-
 }

@@ -72,7 +72,6 @@ class _AuthPageState extends State<AuthPage> {
     }
     _formKey.currentState.save();
 
-
     print(_authFormData['email'] );
     print(_authFormData['password'] );
     print(_authFormData['terms'] );

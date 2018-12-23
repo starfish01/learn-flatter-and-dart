@@ -6,7 +6,8 @@ class ProductEditPage extends StatefulWidget {
   final Map<String, dynamic> product;
   final int productIndex;
 
-  ProductEditPage({this.addProduct, this.product, this.updateProduct, this.productIndex});
+  ProductEditPage(
+      {this.addProduct, this.product, this.updateProduct, this.productIndex});
 
   @override
   State<StatefulWidget> createState() {
@@ -28,8 +29,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
     return TextFormField(
       decoration: InputDecoration(labelText: 'Product Title'),
       // autovalidate: true,
-       initialValue:
-          widget.product == null ? '' : widget.product['title'],
+      initialValue: widget.product == null ? '' : widget.product['title'],
       validator: (String value) {
         if (value.isEmpty || value.trim().length <= 0) {
           return "Title is required";
@@ -49,8 +49,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
         }
       },
       maxLines: 4,
-       initialValue:
-          widget.product == null ? '' : widget.product['description'],
+      initialValue: widget.product == null ? '' : widget.product['description'],
       decoration: InputDecoration(labelText: 'Product Description'),
       onSaved: (String value) {
         _formData['description'] = value;
@@ -82,14 +81,12 @@ class _ProductEditPageState extends State<ProductEditPage> {
     }
     _formKey.currentState.save();
 
-    if(widget.product == null){
+    if (widget.product == null) {
       widget.addProduct(_formData);
-    }else{
+    } else {
       widget.updateProduct(widget.productIndex, _formData);
     }
 
-
-    
     Navigator.pushReplacementNamed(context, '/products');
   }
 

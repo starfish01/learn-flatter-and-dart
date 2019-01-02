@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../widgets/products/products.dart';
 
-//import '../models/product.dart';
-
 class ProductsPage extends StatelessWidget {
-
   Widget _buildSideDrawer(BuildContext context) {
     return Drawer(
       child: Column(

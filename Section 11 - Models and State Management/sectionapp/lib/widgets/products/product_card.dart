@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import './price_tag.dart';
 import './address_tag.dart';
 import '../ui_elements/title_default.dart';
-
 import '../../models/product.dart';
 
 class ProductCard extends StatelessWidget {

@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 //import the package
 import 'package:scoped_model/scoped_model.dart';
+import 'package:http/http.dart' as http;
 //import our classes
 import '../models/product.dart';
 import '../models/user.dart';
@@ -11,9 +14,31 @@ mixin ConnectedProductsModel on Model {
   int _selProductIndex;
   //function being shared by mixins 
   void addProduct(String title, String description, String image, double price) {
-    final Product newProduct = Product(title: title, description: description, image:image, price: price, userEmail: _authenticatedUser.email, userID: _authenticatedUser.id);
+
+    final Map<String,dynamic> productData = {
+      'title': title,
+      'description': description,
+      'image':'https://www.google.com/url?sa=i&source=images&cd=&cad=rja&uact=8&ved=2ahUKEwjFrf6owNPfAhUKi7wKHaoiDzQQjRx6BAgBEAU&url=%2Furl%3Fsa%3Di%26source%3Dimages%26cd%3D%26ved%3D%26url%3Dhttps%253A%252F%252Fwww.usatoday.com%252Fstory%252Fmoney%252F2018%252F10%252F28%252Fnational-chocolate-day-2018%252F1798801002%252F%26psig%3DAOvVaw3MBpfPXvLbqdQMqVhhKP_W%26ust%3D1546669846037278&psig=AOvVaw3MBpfPXvLbqdQMqVhhKP_W&ust=1546669846037278',
+      'price':price
+    };
+    
+    http.post('FIRE BASE URL GOES HERE', body: json.encode(productData))
+    .then((http.Response response){
+      final Map<String,dynamic> responseData = json.decode(response.body);
+final Product newProduct = Product(
+      id: responseData['name'],
+      title: title, 
+      description: description, 
+      image:image, 
+      price: price, 
+      userEmail: _authenticatedUser.email, 
+      userID: _authenticatedUser.id
+      );
     _products.add(newProduct);
     notifyListeners();
+    });
+
+    
   }
 }
 

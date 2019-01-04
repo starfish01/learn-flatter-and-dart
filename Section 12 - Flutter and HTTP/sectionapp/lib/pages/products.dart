@@ -4,7 +4,25 @@ import 'package:scoped_model/scoped_model.dart';
 import '../widgets/products/products.dart';
 import '../scoped-models/main.dart';
 
-class ProductsPage extends StatelessWidget {
+class ProductsPage extends StatefulWidget {
+  final MainModel model;
+
+  ProductsPage(this.model);
+
+  @override
+  State<StatefulWidget> createState() {
+    return _ProductsPageState();
+  }
+}
+
+class _ProductsPageState extends State<ProductsPage> {
+
+  @override
+  initState(){
+    widget.model.fetchProducts();
+    super.initState();
+  }
+
   Widget _buildSideDrawer(BuildContext context) {
     return Drawer(
       child: Column(
@@ -25,6 +43,20 @@ class ProductsPage extends StatelessWidget {
     );
   }
 
+  Widget _buildProductsList() {
+    return ScopedModelDescendant<MainModel>(
+              builder: (BuildContext context, Widget child, MainModel model) {
+                Widget content = Center(child: Text('No Products Found'));
+                if(model.displayProducts.length > 0 && !model.isLoading){
+                  content = Products();
+                } else if (model.isLoading){
+                  content = Center(child:
+                  CircularProgressIndicator());
+                }
+                return content;
+              });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,8 +64,8 @@ class ProductsPage extends StatelessWidget {
       appBar: AppBar(
         title: Text('EasyList'),
         actions: <Widget>[
-          ScopedModelDescendant<MainModel>(builder:
-              (BuildContext context, Widget child, MainModel model) {
+          ScopedModelDescendant<MainModel>(
+              builder: (BuildContext context, Widget child, MainModel model) {
             return IconButton(
               icon: Icon(model.isFavListSelected
                   ? Icons.favorite
@@ -45,7 +77,7 @@ class ProductsPage extends StatelessWidget {
           })
         ],
       ),
-      body: Products(),
+      body: _buildProductsList(),
     );
   }
 }

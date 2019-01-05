@@ -18,7 +18,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
     'title': null,
     'description': null,
     'price': null,
-    'image': 'assets/food.jpg'
+    'image': 'https://www.gettyimages.com.au/gi-resources/images/Embed/new/embed2.jpg'
   };
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final _titleFocusNode = FocusNode();
@@ -91,7 +91,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
   Widget _buildSubmitButton() {
     return ScopedModelDescendant<MainModel>(
       builder: (BuildContext context, Widget child, MainModel model) {
-        return RaisedButton(
+        return model.isLoading ? Center(child: CircularProgressIndicator()) :
+        RaisedButton(
           child: Text('Save'),
           textColor: Colors.white,
           onPressed: () => _submitForm(model.addProduct, model.updateProduct, model.selectProduct,
@@ -146,13 +147,14 @@ class _ProductEditPageState extends State<ProductEditPage> {
     _formKey.currentState.save();
     if (selectedProductIndex == null) {
       addProduct(_formData['title'], _formData['description'],
-          _formData['image'], _formData['price']);
+          _formData['image'], _formData['price']).then((_) => Navigator.pushReplacementNamed(context, '/products').then((_) => setSelectedProduct(null)));
     } else {
+      print('failtown');
       updateProduct(_formData['title'], _formData['description'],
-          _formData['image'], _formData['price']);
+          _formData['image'], _formData['price']).then((_) => Navigator.pushReplacementNamed(context, '/products').then((_) => setSelectedProduct(null)));
     }
 
-    Navigator.pushReplacementNamed(context, '/products').then((_) => setSelectedProduct(null));
+    
   }
 
   @override

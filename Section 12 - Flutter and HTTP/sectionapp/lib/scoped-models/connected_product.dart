@@ -16,12 +16,17 @@ mixin ConnectedProductsModel on Model {
   bool _isLoading = false;
 
   //function being shared by mixins
+  
+}
+
+mixin ProductsModel on ConnectedProductsModel {
+  bool _showFavourites = false;
+
+
   Future<bool> addProduct(
-      String title, String description, String image, double price) {
+      String title, String description, String image, double price) async {
     _isLoading = true;
     notifyListeners();
-
-    print(_authenticatedUser);
 
     final Map<String, dynamic> productData = {
       'title': title,
@@ -32,42 +37,45 @@ mixin ConnectedProductsModel on Model {
       'userEmail': _authenticatedUser.email,
       'userID': _authenticatedUser.id,
     };
+    try{
+    final http.Response response = await http.post(
+        'https://flutter-product-1940c.firebaseio.com/products.json',
+        body: json.encode(productData));
 
-    return http
-        .post('https://flutter-product-1940c.firebaseio.com/products.json',
-            body: json.encode(productData))
-        .then((http.Response response) {
-          if(response.statusCode != 200 || response.statusCode != 201){
-            _isLoading = false;
-            notifyListeners();
-            return false;
-          }
-      final Map<String, dynamic> responseData = json.decode(response.body);
-      final Product newProduct = Product(
-          id: responseData['name'],
-          title: title,
-          description: description,
-          image: image,
-          price: price,
-          userEmail: _authenticatedUser.email,
-          userID: _authenticatedUser.id);
-      _products.add(newProduct);
+    if (response.statusCode != 200 || response.statusCode != 201) {
       _isLoading = false;
       notifyListeners();
-    });
-  }
-}
+      return false;
+    }
 
-mixin ProductsModel on ConnectedProductsModel {
-  bool _showFavourites = false;
+    final Map<String, dynamic> responseData = json.decode(response.body);
+    final Product newProduct = Product(
+        id: responseData['name'],
+        title: title,
+        description: description,
+        image: image,
+        price: price,
+        userEmail: _authenticatedUser.email,
+        userID: _authenticatedUser.id);
+    _products.add(newProduct);
+    _isLoading = false;
+    notifyListeners();
+    return true;
+    } catch(error){
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+
+
+  }
 
   Future<Null> fetchProducts() {
     _isLoading = true;
     notifyListeners();
     return http
         .get('https://flutter-product-1940c.firebaseio.com/products.json')
-        .then((http.Response response) {
-          
+        .then<Null>((http.Response response) {
       final List<Product> fetchedProductList = [];
       final Map<String, dynamic> productListData = json.decode(response.body);
 
@@ -95,6 +103,11 @@ mixin ProductsModel on ConnectedProductsModel {
       _isLoading = false;
       notifyListeners();
       _selProductId = null;
+      return;
+    }).catchError((error) {
+      _isLoading = false;
+      notifyListeners();
+      return;
     });
   }
 
@@ -133,7 +146,7 @@ mixin ProductsModel on ConnectedProductsModel {
     });
   }
 
-  Future<Null> updateProduct(
+  Future<bool> updateProduct(
       String title, String description, String image, double price) {
     final Map<String, dynamic> updateData = {
       'title': title,
@@ -162,6 +175,11 @@ mixin ProductsModel on ConnectedProductsModel {
       _products[selectedProductIndex] = updatedProduct;
 
       notifyListeners();
+      return true;
+    }).catchError((onError) {
+      _isLoading = false;
+      notifyListeners();
+      return false;
     });
   }
 
@@ -177,6 +195,10 @@ mixin ProductsModel on ConnectedProductsModel {
             'https://flutter-product-1940c.firebaseio.com/products/${deletedProductId}.json')
         .then((http.Response response) {
       _isLoading = false;
+    }).catchError((onError) {
+      _isLoading = false;
+      notifyListeners();
+      return false;
     });
     notifyListeners();
   }

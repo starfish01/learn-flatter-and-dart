@@ -12,11 +12,11 @@ mixin ConnectedProductsModel on Model {
   //variables being shared between mixins
   List<Product> _products = [];
   User _authenticatedUser;
-  int _selProductIndex;
+  String _selProductId;
   bool _isLoading = false;
 
   //function being shared by mixins
-  Future<Null> addProduct(
+  Future<bool> addProduct(
       String title, String description, String image, double price) {
     _isLoading = true;
     notifyListeners();
@@ -37,6 +37,11 @@ mixin ConnectedProductsModel on Model {
         .post('https://flutter-product-1940c.firebaseio.com/products.json',
             body: json.encode(productData))
         .then((http.Response response) {
+          if(response.statusCode != 200 || response.statusCode != 201){
+            _isLoading = false;
+            notifyListeners();
+            return false;
+          }
       final Map<String, dynamic> responseData = json.decode(response.body);
       final Product newProduct = Product(
           id: responseData['name'],
@@ -56,36 +61,46 @@ mixin ConnectedProductsModel on Model {
 mixin ProductsModel on ConnectedProductsModel {
   bool _showFavourites = false;
 
-  void fetchProducts() {
+  Future<Null> fetchProducts() {
     _isLoading = true;
     notifyListeners();
-    http
+    return http
         .get('https://flutter-product-1940c.firebaseio.com/products.json')
         .then((http.Response response) {
-      print(response.body);
-      print(response.body.isNotEmpty);
+          
+      final List<Product> fetchedProductList = [];
+      final Map<String, dynamic> productListData = json.decode(response.body);
 
-      if (!response.body.isNotEmpty) {
-        print('shouldnot enter here');
-        final List<Product> fetchedProductList = [];
-        final Map<String, dynamic> productListData = json.decode(response.body);
-        productListData.forEach((String productId, dynamic productData) {
-          final Product product = Product(
-            id: productId,
-            title: productData['title'],
-            description: productData['description'],
-            image: productData['image'],
-            price: productData['price'],
-            userEmail: productData['userEmail'],
-            userID: productData['userID'],
-          );
-          fetchedProductList.add(product);
-        });
-        _products = fetchedProductList;
+      if (productListData == null) {
+        _isLoading = false;
+        notifyListeners();
+        return;
       }
+
+      productListData.forEach((String productId, dynamic productData) {
+        final Product product = Product(
+          id: productId,
+          title: productData['title'],
+          description: productData['description'],
+          image: productData['image'],
+          price: productData['price'],
+          userEmail: productData['userEmail'],
+          userID: productData['userID'],
+        );
+        fetchedProductList.add(product);
+      });
+
+      _products = fetchedProductList;
 
       _isLoading = false;
       notifyListeners();
+      _selProductId = null;
+    });
+  }
+
+  int get selectedProductIndex {
+    return _products.indexWhere((Product product) {
+      return product.id == _selProductId;
     });
   }
 
@@ -101,8 +116,8 @@ mixin ProductsModel on ConnectedProductsModel {
     return List.from(_products);
   }
 
-  int get selectedProductIndex {
-    return _selProductIndex;
+  String get selectedProductId {
+    return _selProductId;
   }
 
   bool get isFavListSelected {
@@ -110,10 +125,12 @@ mixin ProductsModel on ConnectedProductsModel {
   }
 
   Product get selectedProduct {
-    if (selectedProductIndex == null) {
+    if (selectedProductId == null) {
       return null;
     }
-    return _products[selectedProductIndex];
+    return _products.firstWhere((Product product) {
+      return product.id == _selProductId;
+    });
   }
 
   Future<Null> updateProduct(
@@ -141,6 +158,7 @@ mixin ProductsModel on ConnectedProductsModel {
           userEmail: selectedProduct.userEmail,
           userID: selectedProduct.userID);
       //products.add(updatedProduct);
+
       _products[selectedProductIndex] = updatedProduct;
 
       notifyListeners();
@@ -149,8 +167,10 @@ mixin ProductsModel on ConnectedProductsModel {
 
   void deleteProduct() {
     _isLoading = true;
-    final deletedProductId = selectedProductIndex;
+    final deletedProductId = selectedProduct.id;
+
     _products.removeAt(selectedProductIndex);
+    _selProductId = null;
     notifyListeners();
     http
         .delete(
@@ -161,8 +181,8 @@ mixin ProductsModel on ConnectedProductsModel {
     notifyListeners();
   }
 
-  void selectProduct(int productId) {
-    _selProductIndex = productId;
+  void selectProduct(String productId) {
+    _selProductId = productId;
     if (productId != null) {
       notifyListeners();
     }
@@ -174,6 +194,7 @@ mixin ProductsModel on ConnectedProductsModel {
     final bool newFavStatus = !isCurrentlyFavourite;
 
     final Product updateProduct = Product(
+        id: product.id,
         title: product.title,
         description: product.description,
         price: product.price,

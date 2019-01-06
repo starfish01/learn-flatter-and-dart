@@ -3,9 +3,11 @@ import 'dart:async';
 
 import 'package:scoped_model/scoped_model.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/product.dart';
 import '../models/user.dart';
+import '../models/auth.dart';
 
 mixin ConnectedProductsModel on Model {
   List<Product> _products = [];
@@ -115,7 +117,7 @@ mixin ProductsModel on ConnectedProductsModel {
     };
     return http
         .put(
-            'https://flutter-product-1940c.firebaseio.com/products/${selectedProduct.id}.json',
+            'https://flutter-product-1940c.firebaseio.com/products/${selectedProduct.id}.json?auth=${_authenticatedUser.token}',
             body: json.encode(updateData))
         .then((http.Response reponse) {
       _isLoading = false;
@@ -145,7 +147,7 @@ mixin ProductsModel on ConnectedProductsModel {
     notifyListeners();
     return http
         .delete(
-            'https://flutter-product-1940c.firebaseio.com/products/${deletedProductId}.json')
+            'https://flutter-product-1940c.firebaseio.com/products/${deletedProductId}.json?auth=${_authenticatedUser.token}')
         .then((http.Response response) {
       _isLoading = false;
       notifyListeners();
@@ -161,7 +163,7 @@ mixin ProductsModel on ConnectedProductsModel {
     _isLoading = true;
     notifyListeners();
     return http
-        .get('https://flutter-product-1940c.firebaseio.com/products.json')
+        .get('https://flutter-product-1940c.firebaseio.com/products.json?auth=${_authenticatedUser.token}')
         .then<Null>((http.Response response) {
       final List<Product> fetchedProductList = [];
       final Map<String, dynamic> productListData = json.decode(response.body);
@@ -221,67 +223,73 @@ mixin ProductsModel on ConnectedProductsModel {
 
 mixin UserModel on ConnectedProductsModel {
 
-  Future<Map<String,dynamic>> login(String email, String password) async {
+  User get user {
+    return _authenticatedUser;
+  }
+
+
+  Future<Map<String, dynamic>> authenticate(String email, String password,
+      [AuthMode mode = AuthMode.Login]) async {
     _isLoading = true;
     notifyListeners();
-
     final Map<String, dynamic> authData = {
       'email': email,
       'password': password,
       'returnSecureToken': true
     };
+    http.Response response;
+    if (mode == AuthMode.Login) {
+      response = await http.post(
+        'https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=AIzaSyAD5JnBb_eSwwRGEcJl1QAfpJxQyWPYVf4',
+        body: json.encode(authData),
+        headers: {'Content-Type': 'application/json'},
+      );
+    } else {
+      response = await http.post(
+        'https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key=AIzaSyAD5JnBb_eSwwRGEcJl1QAfpJxQyWPYVf4',
+        body: json.encode(authData),
+        headers: {'Content-Type': 'application/json'},
+      );
+    }
 
-    final http.Response response = await http.post('https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=AIzaSyAD5JnBb_eSwwRGEcJl1QAfpJxQyWPYVf4',
-    body: json.encode(authData),
-    headers: {'Content-Type': 'application/json'});
-
-    print(json.decode(response.body));
     final Map<String, dynamic> responseData = json.decode(response.body);
     bool hasError = true;
-    var message = 'Authentication Error';
+    String message = 'Something went wrong.';
+    print(responseData);
     if (responseData.containsKey('idToken')) {
-      message = 'Authentication succeeded!';
       hasError = false;
-      // _authenticatedUser =
-      //   User(id: 'fdalsdfasf', email: email, password: password);
+      message = 'Authentication succeeded!';
+      _authenticatedUser = User(
+          id: responseData['localId'],
+          email: email,
+          token: responseData['idToken']);
+
+    final SharedPreferences prefs =  await SharedPreferences.getInstance();
+    prefs.setString('token', responseData['idToken']);
+    prefs.setString('userEmail', email);
+    prefs.setString('userId', responseData['localId']);
+    
+    } else if (responseData['error']['message'] == 'EMAIL_EXISTS') {
+      message = 'This email already exists.';
     } else if (responseData['error']['message'] == 'EMAIL_NOT_FOUND') {
       message = 'This email was not found.';
     } else if (responseData['error']['message'] == 'INVALID_PASSWORD') {
-      message = 'The password was invalid.';
+      message = 'The password is invalid.';
     }
     _isLoading = false;
     notifyListeners();
     return {'success': !hasError, 'message': message};
-    
-    
   }
 
-  Future<Map<String, dynamic>> signup(String email, String password) async {
-    _isLoading = true;
-    notifyListeners();
-    final Map<String, dynamic> authData = {
-      'email': email,
-      'password': password,
-      'returnSecureToken': true
-    };
-    final http.Response response = await http.post(
-        'https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key=AIzaSyAD5JnBb_eSwwRGEcJl1QAfpJxQyWPYVf4',
-        body: json.encode(authData),
-        headers: {'Content-Type': 'application/json'});
-
-    print(json.decode(response.body));
-    final Map<String, dynamic> responseData = json.decode(response.body);
-    bool hasError = true;
-    var message = 'Authentication Error';
-    if (responseData.containsKey('idToken')) {
-      message = 'Authentication succeeded!';
-      hasError = false;
-    } else if (responseData['error']['message'] == 'EMAIL_EXISTS') {
-      message = 'This email exists.';
+  void autoAuthenticate() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String token = prefs.getString('token');
+    if(token != null){
+      final String userEmail = prefs.getString('userEmail');
+      final String userId = prefs.getString('userId');
+      _authenticatedUser = User(email: userEmail,id: userId,token: token);
+      notifyListeners();
     }
-    _isLoading = false;
-    notifyListeners();
-    return {'success': !hasError, 'message': message};
   }
 }
 

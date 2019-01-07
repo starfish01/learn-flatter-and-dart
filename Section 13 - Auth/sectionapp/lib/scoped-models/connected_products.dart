@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:rxdart/subjects.dart';
 
 import '../models/product.dart';
 import '../models/user.dart';
@@ -222,9 +223,15 @@ mixin ProductsModel on ConnectedProductsModel {
 }
 
 mixin UserModel on ConnectedProductsModel {
+  PublishSubject<bool> _userSubject = PublishSubject();
+  Timer _authTimer;
 
   User get user {
     return _authenticatedUser;
+  }
+
+  PublishSubject<bool> get userSubject{
+    return _userSubject;
   }
 
 
@@ -263,11 +270,14 @@ mixin UserModel on ConnectedProductsModel {
           id: responseData['localId'],
           email: email,
           token: responseData['idToken']);
-
+      setAuthTimeout(int.parse(responseData['expiresIn']));
+      final DateTime now = DateTime.now();
+      final DateTime expiryTime = now.add(Duration(seconds: int.parse(responseData['expiresIn'])));
     final SharedPreferences prefs =  await SharedPreferences.getInstance();
     prefs.setString('token', responseData['idToken']);
     prefs.setString('userEmail', email);
     prefs.setString('userId', responseData['localId']);
+    prefs.setString('expiryTime', expiryTime.toIso8601String());
     
     } else if (responseData['error']['message'] == 'EMAIL_EXISTS') {
       message = 'This email already exists.';
@@ -284,13 +294,47 @@ mixin UserModel on ConnectedProductsModel {
   void autoAuthenticate() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String token = prefs.getString('token');
+
+    final String expiryTimeString = prefs.getString('expiryTime');
+
+
     if(token != null){
+      final DateTime now = DateTime.now();
+      final parsedExpiryTime = DateTime.parse(expiryTimeString);
+      if(parsedExpiryTime.isBefore(now)){
+        _authenticatedUser = null;
+        notifyListeners();
+        return;
+      }
+
       final String userEmail = prefs.getString('userEmail');
       final String userId = prefs.getString('userId');
+      
+      final int tokenLifeSpan = parsedExpiryTime.difference(now).inSeconds;
+      setAuthTimeout(tokenLifeSpan);
+
       _authenticatedUser = User(email: userEmail,id: userId,token: token);
       notifyListeners();
     }
   }
+
+  void logout() async {
+    _authenticatedUser = null;
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    //prefs.remove() to remove specific items
+    prefs.clear();
+    _authTimer.cancel();
+
+
+    //Todo: 4:20 
+    // https://www.udemy.com/learn-flutter-dart-to-build-ios-android-apps/learn/v4/t/lecture/10735486?start=0
+    _userSubject.add(false);
+  }
+
+  void setAuthTimeout(int time){
+    _authTimer = Timer(Duration(seconds: time), logout);
+  }
+
 }
 
 mixin UtilityModel on ConnectedProductsModel {

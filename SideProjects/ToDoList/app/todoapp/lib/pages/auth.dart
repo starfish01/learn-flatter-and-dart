@@ -16,11 +16,15 @@ class AuthPage extends StatelessWidget {
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
+          color: Color.fromRGBO(113,199,236, 1.0)
             // image: _buildBackgroundImage(),
             ),
         // padding: EdgeInsets.symmetric(vertical: 10.0),
         child: SingleChildScrollView(
           child: Container(
+            decoration: BoxDecoration(
+                    color: Color.fromRGBO(113,199,236, 1.0)
+                  ),
             // margin: EdgeInsets.only(top: 50.0),
             child: Column(
               children: <Widget>[
@@ -34,8 +38,26 @@ class AuthPage extends StatelessWidget {
                     style: TextStyle(fontSize: 45, color: Colors.white),
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.blue,
+                    color: Color.fromRGBO(24,154,211,1.0),
                   ),
+                ),
+                Container(
+                  constraints: BoxConstraints(
+                    minWidth: deviceWidth,
+                    minHeight: 30.0
+                  ),
+                  decoration: BoxDecoration(
+                    color: Color.fromRGBO(0,80,115, 1.0)
+                  ),
+                ),
+                Container(
+                  constraints: BoxConstraints(
+                    minWidth: deviceWidth,
+                    minHeight: deviceWidth
+                  ),
+                  // decoration: BoxDecoration(
+                  //   color: Color.fromRGBO(113,199,236, 1.0)
+                  // ),
                 )
               ],
             ),

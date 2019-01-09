@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
+import 'package:flutter/rendering.dart';
 
 import './scoped-models/main.dart';
 
 import './pages/auth.dart';
 import './pages/todotasks_list.dart';
 
+// Color Palattee
+//https://www.color-hex.com/color-palette/30415
+
 void main() {
-  // debugPaintSizeEnabled = true;
+   //debugPaintSizeEnabled = true;
   // debugPaintBaselinesEnabled = true;
   // debugPaintPointersEnabled = true;
   runApp(ToDoApp());
